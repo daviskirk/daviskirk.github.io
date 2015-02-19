@@ -1,5 +1,5 @@
 ---
-layout: post
+layout: default
 title: Datetime conversion discovery
 excerpt: How different underlying types make for confusing conversions between datetime formats in python
 ---
@@ -10,7 +10,7 @@ Date and time handling seem to always be a tiny bit frustrating. This is not
 only because getting it right is a really hard thing to do but also because
 there are many different ways of looking at the problem. In python, there are
 lots of differen types and modules for handling dates and times, including the
-builtin <code>datetime</code> module, <code>numpy=s =datetime64</code> system and the many different
+builtin <code>datetime</code> module, <code>numpy</code>'s <code>datetime64</code> system and the many different
 tools and abstractions that <code>pandas</code> provides on top.
 </p>
 
@@ -23,59 +23,36 @@ tools and abstractions that <code>pandas</code> provides on top.
 </div>
 
 <p>
-<code>datetime.datetime</code> objects are initialized based on seconds.
+This <code>datetime.datetime</code> objects is initialized based on seconds.
 For example, this will work:
 </p>
 <div class="org-src-container">
 
-<pre class="src src-python"><span style="color: #DFAF8F;">dt64</span> = np.datetime64<span style="color: #DCDCCC;">(</span><span style="color: #CC9393;">'2015-02-19T15:20'</span><span style="color: #DCDCCC;">)</span>
-dt64
-<span style="color: #DFAF8F;">underlying_object</span> = dt64.item<span style="color: #DCDCCC;">()</span>
-underlying_object
+<pre class="src src-python"><span style="color: #DFAF8F;">dt64</span> = np.datetime64<span style="color: #DCDCCC;">(</span><span style="color: #CC9393;">'2015-02-19T15:20:15'</span><span style="color: #DCDCCC;">)</span>
 <span style="color: #DFAF8F;">datetime_cast</span> = dt64.astype<span style="color: #DCDCCC;">(</span>datetime.datetime<span style="color: #DCDCCC;">)</span>
 datetime_cast
 </pre>
 </div>
 
 <pre class="example">
-numpy.datetime64('2015-02-19T15:20+0100')
-&gt;&gt;&gt; datetime.datetime(2015, 2, 19, 14, 20)
-&gt;&gt;&gt; datetime.datetime(2015, 2, 19, 14, 20)
+datetime.datetime(2015, 2, 19, 14, 20, 15)
 </pre>
 
 <p>
-This is because <code>dt64</code> is a second base <code>np.datetime64</code> object:
-</p>
-<div class="org-src-container">
-
-<pre class="src src-python">dt64.dtype
-</pre>
-</div>
-
-<pre class="example">
-dtype('&lt;M8[m]')
-</pre>
-
-<p>
-If you start using other types and time bases, the conversions will just not
-work, and return <code>long</code> objects.
+However, if you start using types and time bases other than second and minutes,
+the conversions will just not work, and return <code>long</code> objects.
 </p>
 
 <div class="org-src-container">
 
-<pre class="src src-python"><span style="color: #DFAF8F;">dt64</span> = np.datetime64<span style="color: #DCDCCC;">(</span><span style="color: #CC9393;">'2015-02-19T15:20'</span>,<span style="color: #CC9393;">'ns'</span><span style="color: #DCDCCC;">)</span>
-dt64
-<span style="color: #DFAF8F;">underlying_object</span> = dt64.item<span style="color: #DCDCCC;">()</span>  <span style="color: #5F7F5F;"># </span><span style="color: #7F9F7F;">long</span>
-underlying_object
-<span style="color: #DFAF8F;">datetime_cast</span> = dt64.astype<span style="color: #DCDCCC;">(</span>datetime.datetime<span style="color: #DCDCCC;">)</span>  <span style="color: #5F7F5F;"># </span><span style="color: #7F9F7F;">long</span>
+<pre class="src src-python"><span style="color: #DFAF8F;">dt64</span> = np.datetime64<span style="color: #DCDCCC;">(</span><span style="color: #CC9393;">'2015-02-19T15:20:15'</span>,<span style="color: #CC9393;">'ns'</span><span style="color: #DCDCCC;">)</span>  <span style="color: #5F7F5F;"># </span><span style="color: #7F9F7F;">nanoseconds</span>
+<span style="color: #DFAF8F;">datetime_cast</span> = dt64.astype<span style="color: #DCDCCC;">(</span>datetime.datetime<span style="color: #DCDCCC;">)</span>
 datetime_cast
 </pre>
 </div>
 
 <pre class="example">
-numpy.datetime64('2015-02-19T15:20:00.000000000+0100')
-&gt;&gt;&gt; 1424355600000000000L
-&gt;&gt;&gt; 1424355600000000000L
+1424355615000000000L
 </pre>
 
 <p>
@@ -93,8 +70,6 @@ Let's say we have this construct:
 
 <pre class="src src-python"><span style="color: #DFAF8F;">dates</span> = pd.date_range<span style="color: #DCDCCC;">(</span><span style="color: #CC9393;">'2012-1-1'</span>, periods=5, freq=<span style="color: #CC9393;">'D'</span><span style="color: #DCDCCC;">)</span>
 dates
-<span style="color: #DFAF8F;">dates_dt64</span> = dates.values
-dates_dt64
 </pre>
 </div>
 
@@ -102,7 +77,17 @@ dates_dt64
 &lt;class 'pandas.tseries.index.DatetimeIndex'&gt;
 [2012-01-01, ..., 2012-01-05]
 Length: 5, Freq: D, Timezone: None
-&gt;&gt;&gt; array(['2012-01-01T01:00:00.000000000+0100',
+</pre>
+
+<div class="org-src-container">
+
+<pre class="src src-python"><span style="color: #DFAF8F;">dates_dt64</span> = dates.values
+dates_dt64
+</pre>
+</div>
+
+<pre class="example">
+array(['2012-01-01T01:00:00.000000000+0100',
        '2012-01-02T01:00:00.000000000+0100',
        '2012-01-03T01:00:00.000000000+0100',
        '2012-01-04T01:00:00.000000000+0100',
@@ -115,16 +100,21 @@ As long as we stay within pandas, we're fine:
 </p>
 <div class="org-src-container">
 
-<pre class="src src-python"><span style="color: #DFAF8F;">ts</span> = dates<span style="color: #DCDCCC;">[</span>0<span style="color: #DCDCCC;">]</span>
+<pre class="src src-python"><span style="color: #DFAF8F;">ts</span> = dates<span style="color: #DCDCCC;">[</span>0<span style="color: #DCDCCC;">]</span> <span style="color: #5F7F5F;"># </span><span style="color: #7F9F7F;">scalar timestamp</span>
 ts
-<span style="color: #DFAF8F;">dt</span> = ts.to_datetime<span style="color: #DCDCCC;">()</span>
-dt
 </pre>
 </div>
-
 <pre class="example">
 Timestamp('2012-01-01 00:00:00', offset='D')
-&gt;&gt;&gt; datetime.datetime(2012, 1, 1, 0, 0)
+</pre>
+
+<div class="org-src-container">
+
+<pre class="src src-python">ts.to_datetime<span style="color: #DCDCCC;">()</span>
+</pre>
+</div>
+<pre class="example">
+datetime.datetime(2012, 1, 1, 0, 0)
 </pre>
 
 <p>
@@ -132,16 +122,14 @@ If we use the underlying values however:
 </p>
 <div class="org-src-container">
 
-<pre class="src src-python"><span style="color: #DFAF8F;">ts</span> = dates_dt64<span style="color: #DCDCCC;">[</span>0<span style="color: #DCDCCC;">]</span>
-ts
-<span style="color: #DFAF8F;">dt</span> = ts.astype<span style="color: #DCDCCC;">(</span>datetime.datetime<span style="color: #DCDCCC;">)</span>
+<pre class="src src-python"><span style="color: #DFAF8F;">dt64</span> = dates_dt64<span style="color: #DCDCCC;">[</span>0<span style="color: #DCDCCC;">]</span>  <span style="color: #5F7F5F;"># </span><span style="color: #7F9F7F;">scalar datetime64 object</span>
+<span style="color: #DFAF8F;">dt</span> = dt64.astype<span style="color: #DCDCCC;">(</span>datetime.datetime<span style="color: #DCDCCC;">)</span>  <span style="color: #5F7F5F;"># </span><span style="color: #7F9F7F;">try cast</span>
 dt
 </pre>
 </div>
 
 <pre class="example">
-numpy.datetime64('2012-01-01T01:00:00.000000000+0100')
-&gt;&gt;&gt; 1325376000000000000L
+1325376000000000000L
 </pre>
 
 <p>
@@ -154,7 +142,7 @@ We get stuck with a <code>long</code> because <code>dates_dt64</code> base is in
 </div>
 
 <pre class="example">
-dtype('&lt;M8[ns]')
+'org_babel_python_eoe'
 </pre>
 
 <p>
@@ -163,16 +151,14 @@ The fix is easy when you know this is going on:
 <div class="org-src-container">
 
 <pre class="src src-python"><span style="color: #DFAF8F;">dates_dt64_s</span> = dates_dt64.astype<span style="color: #DCDCCC;">(</span><span style="color: #CC9393;">'datetime64[s]'</span><span style="color: #DCDCCC;">)</span>
-<span style="color: #DFAF8F;">ts</span> = dates_dt64_s<span style="color: #DCDCCC;">[</span>0<span style="color: #DCDCCC;">]</span>
-ts
-<span style="color: #DFAF8F;">dt</span> = ts.astype<span style="color: #DCDCCC;">(</span>datetime.datetime<span style="color: #DCDCCC;">)</span>
-dt
+<span style="color: #DFAF8F;">dt64_s</span> = dates_dt64_s<span style="color: #DCDCCC;">[</span>0<span style="color: #DCDCCC;">]</span>  <span style="color: #5F7F5F;"># </span><span style="color: #7F9F7F;">single datetime63 object</span>
+<span style="color: #DFAF8F;">dt_seconds</span> = dt64_s.astype<span style="color: #DCDCCC;">(</span>datetime.datetime<span style="color: #DCDCCC;">)</span>
+dt_seconds
 </pre>
 </div>
 
 <pre class="example">
-&gt;&gt;&gt; numpy.datetime64('2012-01-01T01:00:00+0100')
-&gt;&gt;&gt; datetime.datetime(2012, 1, 1, 0, 0)
+datetime.datetime(2012, 1, 1, 0, 0)
 </pre>
 
 <p>

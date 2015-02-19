@@ -1,72 +1,50 @@
 #+BEGIN_HTML
 ---
-layout: post
+layout: default
 title: Datetime conversion discovery
 excerpt: How different underlying types make for confusing conversions between datetime formats in python
 ---
 #+END_HTML
 
 :PROPERTIES:
-:header-args:python: :session datetime64 :results output :exports both
+:header-args:python: :session datetime64 :results value pp :exports both
 :END:
 
 Date and time handling seem to always be a tiny bit frustrating. This is not
 only because getting it right is a really hard thing to do but also because
 there are many different ways of looking at the problem. In python, there are
 lots of differen types and modules for handling dates and times, including the
-builtin =datetime= module, =numpy=s =datetime64= system and the many different
+builtin =datetime= module, =numpy='s =datetime64= system and the many different
 tools and abstractions that =pandas= provides on top.
 
-#+begin_src python
+#+begin_src python :results none
   import numpy as np
   import pandas as pd
   import datetime
 #+end_src
 
-#+RESULTS:
-
-=datetime.datetime= objects are initialized based on seconds.
+This =datetime.datetime= objects is initialized based on seconds.
 For example, this will work:
-#+begin_src python
-  dt64 = np.datetime64('2015-02-19T15:20')
-  dt64
-  underlying_object = dt64.item()
-  underlying_object
+#+begin_src python :results value
+  dt64 = np.datetime64('2015-02-19T15:20:15')
   datetime_cast = dt64.astype(datetime.datetime)
   datetime_cast
 #+end_src
 
 #+RESULTS:
-:
-: numpy.datetime64('2015-02-19T15:20+0100')
-: >>> datetime.datetime(2015, 2, 19, 14, 20)
-: >>> datetime.datetime(2015, 2, 19, 14, 20)
+: datetime.datetime(2015, 2, 19, 14, 20, 15)
 
-This is because =dt64= is a second base =np.datetime64= object:
-#+begin_src python
-  dt64.dtype
-#+end_src
-
-#+RESULTS:
-: dtype('<M8[s]')
-
-If you start using other types and time bases, the conversions will just not
-work, and return =long= objects.
+However, if you start using types and time bases other than second and minutes,
+the conversions will just not work, and return =long= objects.
 
 #+begin_src python
-  dt64 = np.datetime64('2015-02-19T15:20','ns')
-  dt64
-  underlying_object = dt64.item()  # long
-  underlying_object
-  datetime_cast = dt64.astype(datetime.datetime)  # long
+  dt64 = np.datetime64('2015-02-19T15:20:15','ns')  # nanoseconds
+  datetime_cast = dt64.astype(datetime.datetime)
   datetime_cast
 #+end_src
 
 #+RESULTS:
-:
-: numpy.datetime64('2015-02-19T02:32:58.000000000+0100')
-: >>> 1424309578000000000L
-: >>> 1424309578000000000L
+: 1424355615000000000L
 
 I stumbled across this when working with =pandas= timeseries.
 =pd.Datetimeindex= objects use =datetime64[ns]= objects under the hood to that
@@ -78,16 +56,20 @@ Let's say we have this construct:
 #+begin_src python
   dates = pd.date_range('2012-1-1', periods=5, freq='D')
   dates
+#+end_src
+
+#+RESULTS:
+: <class 'pandas.tseries.index.DatetimeIndex'>
+: [2012-01-01, ..., 2012-01-05]
+: Length: 5, Freq: D, Timezone: None
+
+#+begin_src python
   dates_dt64 = dates.values
   dates_dt64
 #+end_src
 
 #+RESULTS:
-:
-: <class 'pandas.tseries.index.DatetimeIndex'>
-: [2012-01-01, ..., 2012-01-05]
-: Length: 5, Freq: D, Timezone: None
-: >>> array(['2012-01-01T01:00:00.000000000+0100',
+: array(['2012-01-01T01:00:00.000000000+0100',
 :        '2012-01-02T01:00:00.000000000+0100',
 :        '2012-01-03T01:00:00.000000000+0100',
 :        '2012-01-04T01:00:00.000000000+0100',
@@ -96,33 +78,31 @@ Let's say we have this construct:
 and we want see represent a value as a =datetime.datetime= object.
 As long as we stay within pandas, we're fine:
 #+begin_src python
-  ts = dates[0]
+  ts = dates[0] # scalar timestamp
   ts
-  dt = ts.to_datetime()
-  dt
 #+end_src
-
 #+RESULTS:
-:
 : Timestamp('2012-01-01 00:00:00', offset='D')
-: >>> datetime.datetime(2012, 1, 1, 0, 0)
+
+#+begin_src python
+  ts.to_datetime()
+#+end_src
+#+RESULTS:
+: datetime.datetime(2012, 1, 1, 0, 0)
 
 If we use the underlying values however:
 #+begin_src python
-  ts = dates_dt64[0]
-  ts
-  dt = ts.astype(datetime.datetime)
-  dt
+  dt64_ns = dates_dt64[0]  # scalar datetime64 object
+  dt_ns = dt64_ns.astype(datetime.datetime)  # try cast
+  dt_ns
 #+end_src
 
 #+RESULTS:
-:
-: numpy.datetime64('2012-01-01T01:00:00.000000000+0100')
-: >>> 1325376000000000000L
+: 1325376000000000000L
 
 We get stuck with a =long= because =dates_dt64= base is in nanoseconds.
 #+begin_src python
-  ts.dtype
+  dt64.dtype
 #+end_src
 
 #+RESULTS:
@@ -131,16 +111,13 @@ We get stuck with a =long= because =dates_dt64= base is in nanoseconds.
 The fix is easy when you know this is going on:
 #+begin_src python
   dates_dt64_s = dates_dt64.astype('datetime64[s]')
-  ts = dates_dt64_s[0]
-  ts
-  dt = ts.astype(datetime.datetime)
-  dt
+  dt64_s = dates_dt64_s[0]  # single datetime63 object
+  dt_seconds = dt64_s.astype(datetime.datetime)
+  dt_seconds
 #+end_src
 
 #+RESULTS:
-:
-: >>> numpy.datetime64('2012-01-01T01:00:00+0100')
-: >>> datetime.datetime(2012, 1, 1, 0, 0)
+: datetime.datetime(2012, 1, 1, 0, 0)
 
 Thank god that for most use cases, pandas handles all of these weird casts and
 conversions beautifully so that you don't need to know any of the above in 99%
