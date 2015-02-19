@@ -1,0 +1,173 @@
+---
+layout: default
+title: Datetime conversion discovery
+excerpt: How different underlying types make for confusing conversions between datetime formats in python
+---
+
+
+<div class="org-src-container">
+
+<pre class="src src-python"><span style="color: #F0DFAF; font-weight: bold;">import</span> numpy <span style="color: #F0DFAF; font-weight: bold;">as</span> np
+<span style="color: #F0DFAF; font-weight: bold;">import</span> pandas <span style="color: #F0DFAF; font-weight: bold;">as</span> pd
+<span style="color: #F0DFAF; font-weight: bold;">import</span> datetime
+</pre>
+</div>
+
+<p>
+<code>datetime.datetime</code> objects are initialized based on seconds.
+For example, this will work:
+</p>
+<div class="org-src-container">
+
+<pre class="src src-python"><span style="color: #DFAF8F;">dt64</span> = np.datetime64<span style="color: #DCDCCC;">(</span><span style="color: #CC9393;">'now'</span><span style="color: #DCDCCC;">)</span>
+dt64
+<span style="color: #DFAF8F;">underlying_object</span> = dt64.item<span style="color: #DCDCCC;">()</span>
+underlying_object
+<span style="color: #DFAF8F;">datetime_cast</span> = dt64.astype<span style="color: #DCDCCC;">(</span>datetime.datetime<span style="color: #DCDCCC;">)</span>
+datetime_cast
+</pre>
+</div>
+
+<pre class="example">
+numpy.datetime64('2015-02-19T02:37:50+0100')
+&gt;&gt;&gt; datetime.datetime(2015, 2, 19, 1, 37, 50)
+&gt;&gt;&gt; datetime.datetime(2015, 2, 19, 1, 37, 50)
+</pre>
+
+<p>
+This is because <code>dt64</code> is a second base <code>np.datetime64</code> object:
+</p>
+<div class="org-src-container">
+
+<pre class="src src-python">dt64.dtype
+</pre>
+</div>
+
+<pre class="example">
+dtype('&lt;M8[s]')
+</pre>
+
+<p>
+If you start using other types and time bases, the conversions will just not
+work, and return <code>long</code> objects.
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-python"><span style="color: #DFAF8F;">dt64</span> = np.datetime64<span style="color: #DCDCCC;">(</span><span style="color: #CC9393;">'now'</span>,<span style="color: #CC9393;">'ns'</span><span style="color: #DCDCCC;">)</span>
+dt64
+<span style="color: #DFAF8F;">underlying_object</span> = dt64.item<span style="color: #DCDCCC;">()</span>  <span style="color: #5F7F5F;"># </span><span style="color: #7F9F7F;">long</span>
+underlying_object
+<span style="color: #DFAF8F;">datetime_cast</span> = dt64.astype<span style="color: #DCDCCC;">(</span>datetime.datetime<span style="color: #DCDCCC;">)</span>  <span style="color: #5F7F5F;"># </span><span style="color: #7F9F7F;">long</span>
+datetime_cast
+</pre>
+</div>
+
+<pre class="example">
+numpy.datetime64('2015-02-19T02:37:50.000000000+0100')
+&gt;&gt;&gt; 1424309870000000000L
+&gt;&gt;&gt; 1424309870000000000L
+</pre>
+
+<p>
+I stumbled across this when working with <code>pandas</code> timeseries.
+<code>pd.Datetimeindex</code> objects use <code>datetime64[ns]</code> objects under the hood to that
+if for some reason you were to create a timerange using pandas and work with
+the underlying <code>datetime64[ns]</code> array. A conversion to <code>datetime.datetime</code>
+objects will no longer work directly.
+</p>
+
+<p>
+Let's say we have this construct:
+</p>
+<div class="org-src-container">
+
+<pre class="src src-python"><span style="color: #DFAF8F;">dates</span> = pd.date_range<span style="color: #DCDCCC;">(</span><span style="color: #CC9393;">'2012-1-1'</span>, periods=5, freq=<span style="color: #CC9393;">'D'</span><span style="color: #DCDCCC;">)</span>
+dates
+<span style="color: #DFAF8F;">dates_dt64</span> = dates.values
+dates_dt64
+</pre>
+</div>
+
+<pre class="example">
+&lt;class 'pandas.tseries.index.DatetimeIndex'&gt;
+[2012-01-01, ..., 2012-01-05]
+Length: 5, Freq: D, Timezone: None
+&gt;&gt;&gt; array(['2012-01-01T01:00:00.000000000+0100',
+       '2012-01-02T01:00:00.000000000+0100',
+       '2012-01-03T01:00:00.000000000+0100',
+       '2012-01-04T01:00:00.000000000+0100',
+       '2012-01-05T01:00:00.000000000+0100'], dtype='datetime64[ns]')
+</pre>
+
+<p>
+and we want see represent a value as a <code>datetime.datetime</code> object.
+As long as we stay within pandas, we're fine:
+</p>
+<div class="org-src-container">
+
+<pre class="src src-python"><span style="color: #DFAF8F;">ts</span> = dates<span style="color: #DCDCCC;">[</span>0<span style="color: #DCDCCC;">]</span>
+ts
+<span style="color: #DFAF8F;">dt</span> = ts.to_datetime<span style="color: #DCDCCC;">()</span>
+dt
+</pre>
+</div>
+
+<pre class="example">
+Timestamp('2012-01-01 00:00:00', offset='D')
+&gt;&gt;&gt; datetime.datetime(2012, 1, 1, 0, 0)
+</pre>
+
+<p>
+If we use the underlying values however:
+</p>
+<div class="org-src-container">
+
+<pre class="src src-python"><span style="color: #DFAF8F;">ts</span> = dates_dt64<span style="color: #DCDCCC;">[</span>0<span style="color: #DCDCCC;">]</span>
+ts
+<span style="color: #DFAF8F;">dt</span> = ts.astype<span style="color: #DCDCCC;">(</span>datetime.datetime<span style="color: #DCDCCC;">)</span>
+dt
+</pre>
+</div>
+
+<pre class="example">
+numpy.datetime64('2012-01-01T01:00:00.000000000+0100')
+&gt;&gt;&gt; 1325376000000000000L
+</pre>
+
+<p>
+We get stuck with a <code>long</code> because <code>dates_dt64</code> base is in nanoseconds.
+</p>
+<div class="org-src-container">
+
+<pre class="src src-python">ts.dtype
+</pre>
+</div>
+
+<pre class="example">
+dtype('&lt;M8[ns]')
+</pre>
+
+<p>
+The fix is easy when you know this is going on:
+</p>
+<div class="org-src-container">
+
+<pre class="src src-python"><span style="color: #DFAF8F;">dates_dt64_s</span> = dates_dt64.astype<span style="color: #DCDCCC;">(</span><span style="color: #CC9393;">'datetime64[s]'</span><span style="color: #DCDCCC;">)</span>
+<span style="color: #DFAF8F;">ts</span> = dates_dt64_s<span style="color: #DCDCCC;">[</span>0<span style="color: #DCDCCC;">]</span>
+ts
+<span style="color: #DFAF8F;">dt</span> = ts.astype<span style="color: #DCDCCC;">(</span>datetime.datetime<span style="color: #DCDCCC;">)</span>
+dt
+</pre>
+</div>
+
+<pre class="example">
+&gt;&gt;&gt; numpy.datetime64('2012-01-01T01:00:00+0100')
+&gt;&gt;&gt; datetime.datetime(2012, 1, 1, 0, 0)
+</pre>
+
+<p>
+Thank god that for most use cases, pandas handles all of these weird casts and
+conversions beautifully so that you don't need to know any of the above in 99%
+of your uses.
+</p>
