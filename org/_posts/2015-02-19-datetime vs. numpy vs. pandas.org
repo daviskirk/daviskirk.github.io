@@ -1,6 +1,6 @@
 #+BEGIN_HTML
 ---
-layout: default
+layout: post
 title: Datetime conversion discovery
 excerpt: How different underlying types make for confusing conversions between datetime formats in python
 ---
@@ -10,12 +10,12 @@ excerpt: How different underlying types make for confusing conversions between d
 :header-args:python: :session datetime64 :results output :exports both
 :END:
 
-Date and time handling seem to always be a tiny bit frustrating because it is
-very to get it right and because there are many different ways that can be
-tried to get it right. In python, there are lots of differen types and modules
-for handling dates and times, including the builtin =datetime= module, =numpy=s
-=datetime64= system and the many different tools and abstractions that =pandas=
-provides on top.
+Date and time handling seem to always be a tiny bit frustrating. This is not
+only because getting it right is a really hard thing to do but also because
+there are many different ways of looking at the problem. In python, there are
+lots of differen types and modules for handling dates and times, including the
+builtin =datetime= module, =numpy=s =datetime64= system and the many different
+tools and abstractions that =pandas= provides on top.
 
 #+begin_src python
   import numpy as np
@@ -28,7 +28,7 @@ provides on top.
 =datetime.datetime= objects are initialized based on seconds.
 For example, this will work:
 #+begin_src python
-  dt64 = np.datetime64('now')
+  dt64 = np.datetime64('2015-02-19T15:20')
   dt64
   underlying_object = dt64.item()
   underlying_object
@@ -38,9 +38,9 @@ For example, this will work:
 
 #+RESULTS:
 :
-: numpy.datetime64('2015-02-19T02:32:58+0100')
-: >>> datetime.datetime(2015, 2, 19, 1, 32, 58)
-: >>> datetime.datetime(2015, 2, 19, 1, 32, 58)
+: numpy.datetime64('2015-02-19T15:20+0100')
+: >>> datetime.datetime(2015, 2, 19, 14, 20)
+: >>> datetime.datetime(2015, 2, 19, 14, 20)
 
 This is because =dt64= is a second base =np.datetime64= object:
 #+begin_src python
@@ -54,7 +54,7 @@ If you start using other types and time bases, the conversions will just not
 work, and return =long= objects.
 
 #+begin_src python
-  dt64 = np.datetime64('now','ns')
+  dt64 = np.datetime64('2015-02-19T15:20','ns')
   dt64
   underlying_object = dt64.item()  # long
   underlying_object

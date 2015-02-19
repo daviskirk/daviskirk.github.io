@@ -1,9 +1,18 @@
 ---
-layout: default
+layout: post
 title: Datetime conversion discovery
 excerpt: How different underlying types make for confusing conversions between datetime formats in python
 ---
 
+
+<p>
+Date and time handling seem to always be a tiny bit frustrating. This is not
+only because getting it right is a really hard thing to do but also because
+there are many different ways of looking at the problem. In python, there are
+lots of differen types and modules for handling dates and times, including the
+builtin <code>datetime</code> module, <code>numpy=s =datetime64</code> system and the many different
+tools and abstractions that <code>pandas</code> provides on top.
+</p>
 
 <div class="org-src-container">
 
@@ -19,7 +28,7 @@ For example, this will work:
 </p>
 <div class="org-src-container">
 
-<pre class="src src-python"><span style="color: #DFAF8F;">dt64</span> = np.datetime64<span style="color: #DCDCCC;">(</span><span style="color: #CC9393;">'now'</span><span style="color: #DCDCCC;">)</span>
+<pre class="src src-python"><span style="color: #DFAF8F;">dt64</span> = np.datetime64<span style="color: #DCDCCC;">(</span><span style="color: #CC9393;">'2015-02-19T15:20'</span><span style="color: #DCDCCC;">)</span>
 dt64
 <span style="color: #DFAF8F;">underlying_object</span> = dt64.item<span style="color: #DCDCCC;">()</span>
 underlying_object
@@ -29,9 +38,9 @@ datetime_cast
 </div>
 
 <pre class="example">
-numpy.datetime64('2015-02-19T02:37:50+0100')
-&gt;&gt;&gt; datetime.datetime(2015, 2, 19, 1, 37, 50)
-&gt;&gt;&gt; datetime.datetime(2015, 2, 19, 1, 37, 50)
+numpy.datetime64('2015-02-19T15:20+0100')
+&gt;&gt;&gt; datetime.datetime(2015, 2, 19, 14, 20)
+&gt;&gt;&gt; datetime.datetime(2015, 2, 19, 14, 20)
 </pre>
 
 <p>
@@ -44,7 +53,7 @@ This is because <code>dt64</code> is a second base <code>np.datetime64</code> ob
 </div>
 
 <pre class="example">
-dtype('&lt;M8[s]')
+dtype('&lt;M8[m]')
 </pre>
 
 <p>
@@ -54,7 +63,7 @@ work, and return <code>long</code> objects.
 
 <div class="org-src-container">
 
-<pre class="src src-python"><span style="color: #DFAF8F;">dt64</span> = np.datetime64<span style="color: #DCDCCC;">(</span><span style="color: #CC9393;">'now'</span>,<span style="color: #CC9393;">'ns'</span><span style="color: #DCDCCC;">)</span>
+<pre class="src src-python"><span style="color: #DFAF8F;">dt64</span> = np.datetime64<span style="color: #DCDCCC;">(</span><span style="color: #CC9393;">'2015-02-19T15:20'</span>,<span style="color: #CC9393;">'ns'</span><span style="color: #DCDCCC;">)</span>
 dt64
 <span style="color: #DFAF8F;">underlying_object</span> = dt64.item<span style="color: #DCDCCC;">()</span>  <span style="color: #5F7F5F;"># </span><span style="color: #7F9F7F;">long</span>
 underlying_object
@@ -64,9 +73,9 @@ datetime_cast
 </div>
 
 <pre class="example">
-numpy.datetime64('2015-02-19T02:37:50.000000000+0100')
-&gt;&gt;&gt; 1424309870000000000L
-&gt;&gt;&gt; 1424309870000000000L
+numpy.datetime64('2015-02-19T15:20:00.000000000+0100')
+&gt;&gt;&gt; 1424355600000000000L
+&gt;&gt;&gt; 1424355600000000000L
 </pre>
 
 <p>
