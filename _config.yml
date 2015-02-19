@@ -1,15 +1,11 @@
 # Site settings
 title: Davis Kirkendall
 email: davis.kirkendall@rwth-aachen.de
-description: > # this means to ignore newlines until "baseurl:"
-My personal coding blog, describing problems, solutions and generally
-interesting stuff I come across while working on my projects which in include
-advanced fluid mechanics, data analysis and large scale optimization
-algorithms.
-baseurl: "" # the subpath of your site, e.g. /blog/
-url: "http://yourdomain.com" # the base hostname & protocol for your site
+description: My personal coding blog, describing problems, solutions and generally interesting stuff I come across while working on my projects which in include advanced fluid mechanics, data analysis and large scale optimization
+algorithms. baseurl: "" # the subpath of your site, e.g. /blog/
+url: "http://daviskirk.github.io" # the base hostname & protocol for your site
 # twitter_username: jekyllrb
 github_username:  daviskirk
-exclude: [Gemfile Gemfile.lock org .git .gitignore]
+exclude: [Gemfile, Gemfile.lock, org, .git, .gitignore]
 # Build settings
 markdown: kramdown
