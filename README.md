@@ -1,2 +1,0 @@
-# daviskirk.github.io
-Blog
