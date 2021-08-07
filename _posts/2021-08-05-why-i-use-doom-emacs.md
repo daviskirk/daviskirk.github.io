@@ -33,7 +33,7 @@ traces of my personal Emacs configuration.
 
 I went through a few strategies:
 
-## Trying to be more disciplined
+## 1. Trying to be more disciplined
 
 The first thing I tried was fairly simple: Just be disciplined and use standard
 Emacs keybindings and default packages settings more.
@@ -43,7 +43,7 @@ ergonomic (for me) on a modern squashed laptop keyboard and aren't very intuitiv
 In addition my personal keybindings were sometimes close "enough" to the originals that I would end up getting confused all the time.
 I got lazy and gave up pretty quickly.
 
-## Use someone else's Emacs configuration
+## 2. Use someone else's Emacs configuration
 
 There a bunch of people who spend a great amount of time configuring Emacs and
 have published their configurations on GitHub. I could just go there grab one
@@ -52,11 +52,11 @@ A notable example in this category would be:
 
 - https://github.com/purcell/emacs.d
 
-Steve Purcell's personal emacs config in which he basically takes the "disciplined" approach mentioned above, but did it much, much better than I could ever do.
+Steve Purcell's personal Emacs config in which he basically takes the "disciplined" approach mentioned above, but did it much, much better than I could ever do.
 
 In the end, I decided to not go this route as I think it I would end up just morphing it into my broken unmaintainable strange configuration again (see the discipline problem above).
 
-## Pre-bundled Emacs "Distributions"
+## 3. Pre-bundled Emacs "Distributions"
 
 These are various "meta-configurations" that pre-configure Emacs with (hopefully)
 sensible settings and often bundle a few packages to give Emacs a modern look
@@ -73,7 +73,7 @@ I ended up choosing doom because the defaults were good, it's was easy to add wh
 
 # Diving into Doom Emacs
 
-Doom emacs is written by [Henrik Lissner](https://github.com/hlissner) and it's pretty amazing what he has done.
+Doom Emacs is written by [Henrik Lissner](https://github.com/hlissner) and it's pretty amazing what he has done.
 The configuration system is very clean and let's the user go from having a nice out of the box no-configuration experience (including a walkthrough setup wizard) to integrating your own Elisp code without breaking anything.
 
 ```
@@ -90,13 +90,13 @@ Just uncomment the parts you want and run
 ```
 
 which will download and configure the correct packages so the next time you
-start emacs they will be there.
+start Emacs they will be there.
 
 Regarding other configuration files, the `package.el` file defines what external packages need to be loaded and the
 `config.el` is basically a free for all configuration file similar to the
 `init.el` we're used to in Emacs.
 
-The setup forces the me to think about the structure of [my configuration](https://github.com/daviskirk/doom.d).
+The setup forces the me to think about the structure of [my configuration](https://github.com/daviskirk/doom.d) and be a bit more organized... nice!
 
 ## Turning evil and learning vim keybindings
 
