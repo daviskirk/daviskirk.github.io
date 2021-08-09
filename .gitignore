@@ -5,3 +5,9 @@ vendor/
 .jekyll-cache/
 .bundle/
 
+# python
+.env
+.venv
+__pycache__
+.mypy_cache
+.pytest_cache

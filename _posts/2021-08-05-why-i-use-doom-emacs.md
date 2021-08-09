@@ -2,6 +2,7 @@
 layout: default
 title: Why I use Doom Emacs
 excerpt: Doom Emacs broadens my editor horizons
+tags: [emacs, vscode]
 ---
 
 # Me vs. Emacs
